@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientAutoConfiguration;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,13 +46,14 @@ public class MovieCatalogResource {
 //				new Rating("1234",4)
 //				);
 		
-		UserRating ratings = restTemplate.getForObject("http://localhost:8083/ratings/users/"+userId, UserRating.class);
+		UserRating ratings = restTemplate.getForObject("http://rating-data-service/ratings/users/"+userId, UserRating.class);
 		
 		// 2. create the rest template
 		
-		 return ratings.getUserRatings().stream().map(rating -> {
+		 return ratings.getUserRatings().stream()
+				 .map(rating -> {
 			 
-		Movie movie = 	restTemplate.getForObject("http://localhost:8081/movies/"+rating.getMovieId(), Movie.class);
+		Movie movie = 	restTemplate.getForObject("http://movie-info-service/movies/"+rating.getMovieId(), Movie.class);
 		
 			 // different approach using webclient instead of restTemple. Web client is verbose and does actions asynchronously. 
 			 
@@ -62,7 +64,7 @@ public class MovieCatalogResource {
 //			 .bodyToMono(Movie.class)
 //			 .block();
 			 
-		return new CatalogItem(movie.getName(), "desc", rating.getRating());
+		return new CatalogItem(movie.getName(), movie.getDescription(), rating.getRating());
 		}).collect(Collectors.toList());
 		
 		
