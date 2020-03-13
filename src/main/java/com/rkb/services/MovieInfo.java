@@ -27,4 +27,24 @@ public class MovieInfo {
 	public CatalogItem getFallbackCatalogItem(Rating rating) {
 		return new CatalogItem("Movie name not found", "", rating.getRating());
 	}
+	
+	/**
+	 * To achieve the same result we can also apply bulkhead pattern
+	 * 
+	 * @HystrixCommand(
+	 * fallbackMethod = "getFallbackCatalogItem",
+	 * threadPoolKey = "movieInfoPool",
+	 * threadPoolProperties = {
+	 * 		@HystrixProperty(name="coreSize", value="20"),
+	 * 		@HystrixProperty(name="maxQueueSize", value="10")
+	 * }
+	 * )
+	 * public CatalogItem getCatalogItem(Rating rating){
+		Movie movie = 	restTemplate.getForObject("http://movie-info-service/movies/"+rating.getMovieId(), Movie.class);	 
+		return new CatalogItem(movie.getName(), movie.getDescription(), rating.getRating());
+		}
+	 * 
+	 * 
+	 * 
+	 */
 }
